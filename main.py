@@ -16,6 +16,10 @@ class Form(StatesGroup):
     task_title = State()
 
 
+class Delete(StatesGroup):
+    waiting_id = State()
+
+
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
@@ -59,6 +63,37 @@ async def add_4_command(message: types.Message, state: FSMContext):
     await message.answer(bot_text['add_4'], reply_markup=menu_btn())  # here need to add sqlite db
     await state.finish()
 
+
+@dp.message_handler(lambda m: m.text in bot_text['start_btn'][0])
+async def check_task_command(message: types.Message):
+    data = await get_all_tasks(sentry_sdk)
+    answer_string = ""
+    for obj in data:
+        obj_string = f"ID: {obj[0]},\nСообщение: {obj[3]},\nТип: {obj[1]},\nВремя: {obj[2]}\n-----------------------\n"
+        if len(obj_string) + len(answer_string) >= 4096:
+            await message.answer(answer_string)
+            answer_string = ''
+        answer_string += obj_string
+    await message.answer(answer_string)
+    await message.answer(bot_text['check_task'], reply_markup=tasks_btn())
+
+
+@dp.message_handler(lambda m: m.text in bot_text['check_task_btn'][0])
+async def delete_1_command(message: types.Message):
+    await message.answer(bot_text['delete_task'], reply_markup=menu_btn())
+    await Delete.waiting_id.set()
+
+
+@dp.message_handler(state=Delete.waiting_id)
+async def delete_2_command(message: types.Message, state: FSMContext):
+    data = await get_all_tasks(sentry_sdk)
+    for obj in data:
+        if str(obj[0]) == message.text.strip():
+            await state.finish()
+            await delete_task(obj[0], sentry_sdk)
+            await message.answer(bot_text['delete_task_success'], reply_markup=menu_btn())
+            return  # here we are deleting
+    await message.answer(bot_text['delete_task_error'], reply_markup=menu_btn())
 
 if __name__ == '__main__':
     while True:

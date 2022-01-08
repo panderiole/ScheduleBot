@@ -26,3 +26,11 @@ def menu_btn():
     button_menu = types.KeyboardButton(text=bot_text['add_1_btn'][3])
     keyboard.add(button_menu)
     return keyboard
+
+
+def tasks_btn():
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    button_delete = types.KeyboardButton(text=bot_text['check_task_btn'][0])
+    button_menu = types.KeyboardButton(text=bot_text['check_task_btn'][1])
+    keyboard.add(button_delete, button_menu)
+    return keyboard
