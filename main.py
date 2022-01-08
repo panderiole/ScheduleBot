@@ -44,7 +44,17 @@ async def add_1_command(message: types.Message):
 async def add_2_command(message: types.Message, state: FSMContext):
     await state.update_data(task_type=message.text)
     await Form.task_date.set()
-    await message.answer(bot_text["add_2"], reply_markup=menu_btn())
+    await Form.task_date.set()
+    if message.text == bot_text["add_1_btn"][2]:
+
+        await message.answer(bot_text["add_2"], reply_markup=menu_btn())
+    else:
+        if message.text == bot_text['add_1_btn'][0]:
+            await state.update_data(task_date="09:00")
+        else:
+            await state.update_data(task_date="22:30")
+        await Form.task_place.set()
+        await message.answer(bot_text["add_3"], reply_markup=add_3_btn(await get_all_tasks(sentry_sdk)))
 
 
 @dp.message_handler(state=Form.task_date)
