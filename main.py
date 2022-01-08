@@ -68,7 +68,16 @@ async def add_4_command(message: types.Message, state: FSMContext):
 async def check_task_command(message: types.Message):
     data = await get_all_tasks(sentry_sdk)
     answer_string = ""
+    morning_data, evening_data, urgently_data = [], [], []
     for obj in data:
+        if obj[1] == bot_text['add_1_btn'][0]:
+            morning_data.append(obj)
+        elif obj[1] == bot_text['add_1_btn'][1]:
+            evening_data.append(obj)
+        elif obj[1] == bot_text['add_1_btn'][2]:
+            urgently_data.append(obj)
+    data_sorted = morning_data + evening_data + urgently_data
+    for obj in data_sorted:
         obj_string = f"ID: {obj[0]},\nСообщение: {obj[3]},\nТип: {obj[1]},\nВремя: {obj[2]}\n-----------------------\n"
         if len(obj_string) + len(answer_string) >= 4096:
             await message.answer(answer_string)
