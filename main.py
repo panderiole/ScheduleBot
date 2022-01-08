@@ -8,12 +8,14 @@ from db import *
 from settings import *
 import sentry_sdk
 import re
+from operator import itemgetter
 
 
 class Form(StatesGroup):
     task_type = State()
     task_date = State()
     task_title = State()
+    task_place = State()
 
 
 class Delete(StatesGroup):
@@ -52,15 +54,22 @@ async def add_3_command(message: types.Message, state: FSMContext):
         await message.answer(bot_text["add_error"], reply_markup=menu_btn())
     else:
         await state.update_data(task_date=res.group(0))
-        await Form.task_title.set()
-        await message.answer(bot_text["add_3"], reply_markup=menu_btn())
+        await Form.task_place.set()
+        await message.answer(bot_text["add_3"], reply_markup=add_3_btn(await get_all_tasks(sentry_sdk)))
+
+
+@dp.message_handler(state=Form.task_place)
+async def add_4_command(message: types.Message, state: FSMContext):
+    await state.update_data(task_place=message.text)
+    await Form.task_title.set()
+    await message.answer(bot_text["add_4"], reply_markup=menu_btn())
 
 
 @dp.message_handler(state=Form.task_title)
-async def add_4_command(message: types.Message, state: FSMContext):
+async def add_5_command(message: types.Message, state: FSMContext):
     await state.update_data(task_title=message.text)
     await write_task(await state.get_data(), sentry_sdk)
-    await message.answer(bot_text['add_4'], reply_markup=menu_btn())  # here need to add sqlite db
+    await message.answer(bot_text['add_5'], reply_markup=menu_btn())  # here need to add sqlite db
     await state.finish()
 
 
@@ -76,9 +85,12 @@ async def check_task_command(message: types.Message):
             evening_data.append(obj)
         elif obj[1] == bot_text['add_1_btn'][2]:
             urgently_data.append(obj)
+    morning_data = sorted(morning_data, key=itemgetter(4))
+    evening_data = sorted(evening_data, key=itemgetter(4))
+    urgently_data = sorted(urgently_data, key=itemgetter(4))
     data_sorted = morning_data + evening_data + urgently_data
     for obj in data_sorted:
-        obj_string = f"ID: {obj[0]},\nСообщение: {obj[3]},\nТип: {obj[1]},\nВремя: {obj[2]}\n-----------------------\n"
+        obj_string = f"ID: {obj[0]},\nМесто: {obj[4]}\nСообщение: {obj[3]},\nТип: {obj[1]},\nВремя: {obj[2]}\n-----------------------\n"
         if len(obj_string) + len(answer_string) >= 4096:
             await message.answer(answer_string)
             answer_string = ''

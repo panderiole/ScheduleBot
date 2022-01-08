@@ -21,8 +21,9 @@ async def execute_command(q, sentry, type):
 
 
 async def write_task(obj, sentry):
-    sqlite_insert_query = f"""INSERT INTO tasks (type, date, title)
-                              VALUES ('{obj['task_type']}', '{obj['task_date']}', '{obj['task_title']}');"""
+    sqlite_insert_query = f"""INSERT INTO tasks (type, date, title, place)
+                              VALUES ('{obj['task_type']}', '{obj['task_date']}', '{obj['task_title']}',
+                               '{obj['task_place']}');"""
     await execute_command(sqlite_insert_query, sentry, 'write')
 
 
