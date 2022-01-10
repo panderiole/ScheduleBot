@@ -9,9 +9,9 @@ charset-normalizer==2.0.10
 frozenlist==1.2.0
 idna==3.3
 multidict==5.2.0
-pyTelegramBotAPI==4.2.2
+pyTelegramBotAPI==4.3.1
 pytz==2021.3
 requests==2.27.1
-sentry-sdk==1.5.1
+sentry-sdk==1.5.2
 urllib3==1.26.8
 yarl==1.7.2

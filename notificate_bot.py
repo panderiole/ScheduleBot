@@ -1,16 +1,14 @@
 import _thread
 import asyncio
 import datetime
-import threading
 import time
 from operator import itemgetter
 import sentry_sdk
-import schedule
 import telebot
-
 import create_docx
 from db import get_all_tasks, update_task
 from settings import *
+
 sentry_sdk.init(SENTRY_TOKEN, traces_sample_rate=1.0)
 bot = telebot.TeleBot(token=TELEGRAM_BOT_SENDER_BOT)
 messages_id = []
@@ -66,14 +64,6 @@ def notification(type, task_type):
             messages_id.append(bot.send_message(CHANNEL_NAME, "Задание: " + j[3], reply_markup=markup).message_id)
 
 
-def notification_morning():
-    notification("Утро", 'standart')
-
-
-def notification_evening():
-    notification("Вечер", 'standart')
-
-
 def delete_all_messages():
     global messages_id
     for m in messages_id:
@@ -86,20 +76,27 @@ def delete_all_messages():
 
 def send_document():
     d = create_docx.main(get_tasks('Утро', 'standart'), get_tasks("Вечер", 'standart'))
+    delete_all_messages()
     bot.send_document(CHANNEL_NAME, open(d, 'rb'))
+    update_task(CHANNEL_NAME, 0, sentry_sdk)
 
 
 def life_cycle():
-    schedule.every().day.at("09:00").do(notification_morning)
-    schedule.every().day.at("22:30").do(notification_evening)
+    while True:
+        date = datetime.datetime.now()
+        h, m = int(date.hour), int(date.minute)
+        if h == 9 and m == 0:
+            notification("Утро", 'standart')
+        if ((11 <= h < 14) or (h == 14 and m == 0)) and m % 15 == 0:
+            notification("Утро", 'alert')
+        if h == 22 and m == 30:
+            notification("Вечер", 'standart')
+        if ((0 <= h < 2) or (h == 2 and m == 0)) and m % 30 == 0:
+            notification("Вечер", 'alert')
+        if h == 2 and m == 30:
+            send_document()
+        time.sleep(60)
 
-send_document()
-exit(0)
-_thread.start_new_thread(notification_evening, ())
-time.sleep(3)
-delete_all_messages()
-#notification("Вечер", "alert")
+
+_thread.start_new_thread(life_cycle, ())
 bot.polling()
-#while True:
-#    schedule.run_pending()
-#    time.sleep(1)
