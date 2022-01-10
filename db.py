@@ -1,3 +1,4 @@
+import asyncio
 import sqlite3
 from settings import *
 
@@ -33,3 +34,7 @@ async def get_all_tasks(sentry):
 
 async def delete_task(id, sentry):
     await execute_command(f"""DELETE FROM tasks WHERE id={id}""", sentry, 'delete')
+
+
+def update_task(id, value, sentry):
+    asyncio.run(execute_command(f"""UPDATE tasks SET isCompleted={value} WHERE id={id}""", sentry, "update"))

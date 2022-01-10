@@ -1,4 +1,6 @@
 TELEGRAM_BOT_TOKEN = "2111238966:AAEQrHDXicLlfPw99uqU2QFMBoexIsZTxzk"  # Bot: @workTestOdpash_bot
+TELEGRAM_BOT_SENDER_BOT = "1928272706:AAHcdDyoHMhQiP6JN13iAEwNGQx1hTKO9rc"  # Bot: @olegpash_presentation_bot
+CHANNEL_NAME = '@plannerbusinessgroup'
 SENTRY_TOKEN = "https://f20597c3014e4699969af0244a66a6f8@o1108001.ingest.sentry.io/6135375"
 TIME_REGULAR = "^(([0,1][0-9])|(2[0-3])):[0-5][0-9]$"
 DB_NAME = "sqlite_python.db"
