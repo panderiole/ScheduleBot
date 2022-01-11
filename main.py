@@ -104,9 +104,9 @@ async def check_task_command(message: types.Message):
         if len(obj_string) + len(answer_string) >= 4096:
             await message.answer(answer_string)
             answer_string = ''
-
         answer_string += obj_string
-    await message.answer(answer_string)
+    if answer_string != '':
+        await message.answer(answer_string)
     await message.answer(bot_text['check_task'], reply_markup=tasks_btn())
 
 

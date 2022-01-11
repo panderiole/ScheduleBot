@@ -12,7 +12,7 @@ from settings import *
 sentry_sdk.init(SENTRY_TOKEN, traces_sample_rate=1.0)
 bot = telebot.TeleBot(token=TELEGRAM_BOT_SENDER_BOT)
 messages_id = []
-
+urgently_id = []
 
 @bot.callback_query_handler(func=lambda call: call.data)
 def cb_answer(obj):
@@ -24,7 +24,6 @@ def cb_answer(obj):
         bot.delete_message(obj.message.chat.id, obj.message.id)
     except:
         pass
-
 
 def get_tasks(type, task_type):
     data = asyncio.run(get_all_tasks(sentry_sdk))
@@ -75,10 +74,17 @@ def delete_all_messages():
 
 
 def send_document():
-    d = create_docx.main(get_tasks('Утро', 'standart'), get_tasks("Вечер", 'standart'))
+    global urgently_id
+    d = create_docx.main(get_tasks('Утро', 'standart'), get_tasks("Вечер", 'standart'), get_tasks("Срочно", 'standart'))
     delete_all_messages()
     bot.send_document(CHANNEL_NAME, open(d, 'rb'))
     update_task(CHANNEL_NAME, 0, sentry_sdk)
+    for i in urgently_id:
+        try:
+            bot.delete_message(CHANNEL_NAME, i)
+        except:
+            pass
+    urgently_id = []
 
 
 def life_cycle():
@@ -95,8 +101,19 @@ def life_cycle():
             notification("Вечер", 'alert')
         if h == 2 and m == 30:
             send_document()
+        data = get_tasks("Срочно", 'standart')
+        for x in data:
+            for y in x:
+                hour, minute = map(int, y[2].split(":"))
+                if h == hour and m == minute:
+                    markup = telebot.types.InlineKeyboardMarkup(row_width=3)
+                    markup.row(telebot.types.InlineKeyboardButton('Выполнить', callback_data=y[0]), )
+                    print(y)
+                    urgently_id.append(
+                        bot.send_message(CHANNEL_NAME, "Срочное задание:\nМесто: " + y[4] + "\nЗадание: " + y[3], reply_markup=markup).message_id)
+
         time.sleep(60)
 
 
 _thread.start_new_thread(life_cycle, ())
-bot.polling()
+bot.polling(none_stop=True)
