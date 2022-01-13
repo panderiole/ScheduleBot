@@ -108,7 +108,6 @@ def life_cycle():
                 if h == hour and m == minute:
                     markup = telebot.types.InlineKeyboardMarkup(row_width=3)
                     markup.row(telebot.types.InlineKeyboardButton('Выполнить', callback_data=y[0]), )
-                    print(y)
                     urgently_id.append(
                         bot.send_message(CHANNEL_NAME, "Срочное задание:\nМесто: " + y[4] + "\nЗадание: " + y[3], reply_markup=markup).message_id)
 
