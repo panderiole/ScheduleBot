@@ -14,6 +14,7 @@ bot = telebot.TeleBot(token=TELEGRAM_BOT_SENDER_BOT)
 messages_id = []
 urgently_id = []
 
+
 @bot.callback_query_handler(func=lambda call: call.data)
 def cb_answer(obj):
     try:
@@ -24,6 +25,7 @@ def cb_answer(obj):
         bot.delete_message(obj.message.chat.id, obj.message.id)
     except:
         pass
+
 
 def get_tasks(type, task_type):
     data = asyncio.run(get_all_tasks(sentry_sdk))
@@ -50,8 +52,10 @@ def notification(type, task_type):
                          parse_mode="Markdown").message_id)
     else:
         delete_all_messages()
-        messages_id.append(bot.send_message(CHANNEL_NAME, f'*Остались невыполненные задачи на {type}!*', parse_mode="Markdown").message_id)
     tasks = get_tasks(type, task_type)
+    if task_type != 'standart' and len(tasks) > 0:
+        messages_id.append(bot.send_message(CHANNEL_NAME, f'*Остались невыполненные задачи на {type}!*',
+                                            parse_mode="Markdown").message_id)
     place = ''
     for i in tasks:
         for j in i:
@@ -115,4 +119,9 @@ def life_cycle():
 
 
 _thread.start_new_thread(life_cycle, ())
-bot.polling(none_stop=True)
+while True:
+    try:
+        bot.polling()
+    except:
+        pass
+    time.sleep(60)
