@@ -10,7 +10,7 @@ from db import get_all_tasks, update_task
 from settings import *
 
 sentry_sdk.init(SENTRY_TOKEN, traces_sample_rate=1.0)
-bot = telebot.TeleBot(token=TELEGRAM_BOT_SENDER_BOT)
+bot = telebot.TeleBot(token=TELEGRAM_BOT_SENDER_BOT, threaded=False)
 messages_id = []
 urgently_id = []
 
@@ -121,7 +121,7 @@ def life_cycle():
 _thread.start_new_thread(life_cycle, ())
 while True:
     try:
-        bot.polling()
+        bot.infinity_polling()
     except:
         pass
     time.sleep(60)
